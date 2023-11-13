@@ -1,3 +1,3 @@
 Basic Tic-Tac-Toe game which you can play
-- Versus other player
-- Versus the AI
+- Versus other player (PvP on same screen)
+- Versus the AI (minimax algorithm)
