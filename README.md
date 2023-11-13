@@ -1,3 +1,3 @@
-Basic Tic-Tac-Toe game
-- You can play versus other player
-- Or versus the AI
+Basic Tic-Tac-Toe game, you can play
+- Versus other player
+- Versus the AI
