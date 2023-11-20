@@ -13,6 +13,9 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 # Set the caption
 pygame.display.set_caption("Tic-Tac-Toe")
 
+# control the whole game
+game_over = False
+
 # define colors
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -87,7 +90,7 @@ def minimax(pl):
     return best
 
 
-def show_state():
+def show_board():
     global SPOT
 
     # background color of the main screen
@@ -124,10 +127,10 @@ def show_state():
     i8 = ((x + spot_x * 2 + 24, x + spot_x * 3 + 24), (y + spot_y * 2 + 24, y + spot_y * 3 + 24))
     SPOT = (i0, i1, i2, i3, i4, i5, i6, i7, i8)
 
-    win_tie_text()
+    winner_text()
         
         
-def win_tie_text():
+def winner_text():
     global game_over
 
     if current_winner:
@@ -215,6 +218,9 @@ def make_move(pl, sp):
     x_margin = 15
     print_line = True
 
+    if sp is None:
+        return None
+
     start_x = SPOT[sp][0][0]
     end_x = SPOT[sp][0][1]
     start_y = SPOT[sp][1][0]
@@ -250,31 +256,32 @@ def botplay():
     return bot_move
 
 
-# if you already click vsbot button
-click = False
+# if you already click vsbot button or already choose to play pvp
+choose = False
 
 # you have decided to play with the bot for the rest of the game
 vs_bot = 0
 
 def play(x, y):
-    global click, bbappear, current_winner, vs_bot
+    global choose, current_winner, vs_bot, bbappear
     spot = legal_move(x, y)
 
     # for the first turn only
     vsbot = False
-    if not click:
+    if not choose:
         vsbot = vsbotscope(x, y)
 
-    # let the bot goes first
     if vsbot:  
-        click = True
+        choose = True
         bbappear = False
+        # in case u wanna let the bot goes first i guess
         # move = botplay()
         # current_winner = make_move(player, move)
         vs_bot = 1
 
     # player vs player (2 player)
-    elif (spot is not None) and (not vs_bot):  
+    elif not vs_bot:
+        choose = True
         bbappear = False
         current_winner = make_move(player, spot)
         vs_bot = 0
@@ -282,7 +289,9 @@ def play(x, y):
     # player goes first
     elif vs_bot:
         current_winner = make_move(player, spot)
-        move = botplay()
+        move = None
+        if spot is not None:
+            move = botplay()
         if move is not None:  #  if the previous move(the player) is not a winner
             current_winner = make_move(player, move)
     
@@ -303,19 +312,42 @@ def botbutton():
     BOTBOX = ((screen_width // 2 - 60, screen_width // 2 - 60 + 120), (32 - 15, 32 - 15 + 30))
 
 
-# to freeze the game if its over
-game_over = False
+def restart():
+    global board, bbappear, game_over, current_winner, vs_bot, choose, clearblitting
 
-def freeze():
-    if game_over:
-        pygame.event.set_blocked(pygame.MOUSEBUTTONDOWN)
-        pygame.event.set_blocked(pygame.MOUSEBUTTONUP)
-        pygame.event.set_blocked(pygame.KEYDOWN)
-        pygame.event.set_blocked(pygame.KEYUP)
+    board = [' ' for i in range(9)]
+
+    game_over = False
+    current_winner = None
+    vs_bot = 0
+    choose = False
+    bbappear = True
+
+    show_board()
+    botbutton()
+    surface.blit(screen, (0, 0))
+
+    clearblitting = True
+
+    return None
+    
+
+def restart_bt():
+    font = pygame.font.Font(None, 36)
+    text_surface = font.render("Restart?", True, RED)
+    text_rect = text_surface.get_rect(center=(screen_width // 2, 466))
+    screen.blit(text_surface, text_rect)
+    return text_rect
 
 
 # main game loop
 running = True
+
+# restart the game
+txt_rect = None
+
+# to clear the vsbot button out of blitting screen
+clearblitting = False
 
 while running:
     for event in pygame.event.get():
@@ -323,11 +355,13 @@ while running:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            play(mouse_x, mouse_y)
 
+            if not game_over:
+                play(mouse_x, mouse_y)
+            elif txt_rect.collidepoint(event.pos):
+                txt_rect = restart()
 
-    # print the current state for the game, and also, win or tie.
-    show_state()
+    show_board()
 
     if bbappear:
         botbutton()
@@ -335,10 +369,15 @@ while running:
     # blitting(copying) surfaces onto the main screen
     screen.blit(surface, (0, 0))
 
+    if clearblitting:
+        surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+        clearblitting = False
+
+    if game_over:
+       txt_rect = restart_bt()
+
     # update the display
     pygame.display.flip()
-
-    freeze()
 
 
 # quit game
