@@ -215,6 +215,7 @@ def winner(pl, spot, print_line):
 # round((end - start) / 2) + start -> find the middle pixel, for player
 def make_move(pl, sp):
     global player
+
     x_margin = 15
     print_line = True
 
@@ -239,7 +240,7 @@ def make_move(pl, sp):
         return pl
     
     # did make a move, so shifting the player
-    player = 'O' if player == 'X' else 'X'
+    player = 'O' if pl == 'X' else 'X'
     
 
 def vsbotscope(x, y):
@@ -264,36 +265,45 @@ vs_bot = 0
 
 def play(x, y):
     global choose, current_winner, vs_bot, bbappear
+    
     spot = legal_move(x, y)
 
-    # for the first turn only
+    # who do you want to play against
     vsbot = False
     if not choose:
         vsbot = vsbotscope(x, y)
 
-    if vsbot:  
+    # decided to play vsbot
+    if vsbot:
         choose = True
         bbappear = False
-        # in case u wanna let the bot goes first i guess
-        # move = botplay()
-        # current_winner = make_move(player, move)
         vs_bot = 1
 
-    # player vs player (2 player)
+    # # player vs player (2 player)
     elif not vs_bot:
         choose = True
         bbappear = False
         current_winner = make_move(player, spot)
         vs_bot = 0
 
-    # player goes first
-    elif vs_bot:
-        current_winner = make_move(player, spot)
+    if vs_bot:
+        bbappear = False
         move = None
-        if spot is not None:
+        # - bot goes first
+        if player == 'X':
             move = botplay()
-        if move is not None:  #  if the previous move(the player) is not a winner
             current_winner = make_move(player, move)
+        else:
+            current_winner = make_move(player, spot) # then it is players turn(for this specific click)
+            if spot is not None:
+                move = botplay()
+            current_winner = make_move(player, move)
+
+        # - comment out the above and uncommented this for the player to goes first
+        # current_winner = make_move(player, spot)
+        # if spot is not None:
+        #     move = botplay()
+        # current_winner = make_move(player, move)
     
 
 # appear or disappear(bb for botbutton)
@@ -313,7 +323,7 @@ def botbutton():
 
 
 def restart():
-    global board, bbappear, game_over, current_winner, vs_bot, choose, clearblitting
+    global board, bbappear, game_over, current_winner, vs_bot, choose, clearblitting, player
 
     board = [' ' for i in range(9)]
 
@@ -328,6 +338,7 @@ def restart():
     surface.blit(screen, (0, 0))
 
     clearblitting = True
+    player = 'X'
 
     return None
     
