@@ -261,7 +261,7 @@ def botplay():
 choose = False
 
 # you have decided to play with the bot for the rest of the game
-vs_bot = 0
+vs_bot = None
 
 def play(x, y):
     global choose, current_winner, vs_bot, bbappear
@@ -280,7 +280,7 @@ def play(x, y):
         vs_bot = 1
 
     # # player vs player (2 player)
-    elif not vs_bot:
+    elif not vs_bot and spot is not None:
         choose = True
         bbappear = False
         current_winner = make_move(player, spot)
@@ -323,7 +323,7 @@ def botbutton():
 
 
 def restart():
-    global board, bbappear, game_over, current_winner, vs_bot, choose, clearblitting, player
+    global board, bbappear, game_over, current_winner, vs_bot, choose, clearblitting, player, vs_bot
 
     board = [' ' for i in range(9)]
 
@@ -339,6 +339,7 @@ def restart():
 
     clearblitting = True
     player = 'X'
+    vs_bot = None
 
     return None
     
